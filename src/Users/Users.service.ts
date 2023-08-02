@@ -1,9 +1,8 @@
-import { UsersDto } from './dto/Users';
 import { Users } from './models/Users';
-import { JwtService } from '@nestjs/jwt';
+import { UsersDto } from './dto/Users';
+import { UserloginDto } from './dto/user-login-dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthDto } from 'src/authentication/dto/auth-dto';
+import { Injectable } from '@nestjs/common';
 
 var md5 = require('md5')
 @Injectable()
@@ -11,8 +10,7 @@ export class UsersService{
 
     constructor(
         @InjectModel(Users)
-        private readonly UsersModel: typeof Users,
-        private jwtService: JwtService) { }
+        private readonly UsersModel: typeof Users) { }
 
         new_user(dto: UsersDto): Promise<Users>{
             return this.UsersModel.create({
@@ -23,20 +21,17 @@ export class UsersService{
             })
         }
 
-        async queryLogin(authDto: AuthDto) {
-            const User = await this.UsersModel.findOne({
-                where: {
-                    email: authDto.email,
-                    password: md5(authDto.password)
-                }
-            })
-    
-            if (User === undefined) {
-                throw new UnauthorizedException();
-            }
-            const payload = { sub: User.full_name, correo: User.email, rol: "ADMIN" };
-            return {
-                access_token: await this.jwtService.signAsync(payload),
-            };
+        getAllUsers():Promise<Users[]> {
+            return this.UsersModel.findAll();
         }
+
+        async queryLogin(dto: UserloginDto): Promise<Users | any> {
+            let  user =  await this.UsersModel.findOne({ where: { email: dto.email, password: dto.password }, attributes: ['name', 'lastName'] });
+            if(user === null ){
+                return {"message":"No existe el usuario"}
+            }else{
+                return user
+            }
+        }
+        
 }
