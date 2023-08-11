@@ -5,9 +5,10 @@ import { UsersDto } from './dto/Users';
 import { UserloginDto } from './dto/user-login-dto';
 import { error } from 'console';
 
-@Controller('Users')
+@Controller('users')
 export class UsersController{
     constructor(private service: UsersService) { }
+   
     @Get()
     getAllUsers(){
         return this.service.getAllUsers();

@@ -1,22 +1,21 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from '@nestjs/sequelize';
-import { CreateTaskDto } from "./dto/create-task";
+import { CreateTasksDto } from "./dto/create-task-dto";
 import { UpdateTaskDto } from "./dto/update-task";
-import { Task, Status, Priority } from "./models/task.entity";
+import { Tasks, status, category, priority} from "./models/tasks.entity";
 
 @Injectable()
-
 export class TasksService{
      constructor(
-        @InjectModel(Task)
-        private readonly TaskModel: typeof Task) {}
+        @InjectModel(Tasks)
+        private readonly tasksModel: typeof Tasks) { }
     
-    async getAlltask(): Promise<Task[]>{
-        return this.TaskModel.findAll();
+    async getAlltask(): Promise<Tasks[]>{
+        return this.tasksModel.findAll();
     }
 
-    async getTaskForId(id: string ): Promise<Task> {
-        return await this.TaskModel.findOne(
+    async getTaskForId(id: number ): Promise<Tasks> {
+        return await this.tasksModel.findOne(
             {
                 where: {
                     id: id
@@ -24,27 +23,30 @@ export class TasksService{
             }
         )
     }
-    async create_task(dto: CreateTaskDto): Promise<Task | any>{
-        return this.TaskModel.create({
-            Title: dto.Title,
-            Date: dto.Date,
-            Status: Status.pending,
-            Priority : dto.Priority,
-            Description : dto.Description
+    async create_task(dto: CreateTasksDto): Promise<Tasks | any>{
+        return await this.tasksModel.create({
+            title: dto.title,
+            date: dto.date,
+            category: dto.category,
+            status: status.pending,
+            priority : priority.medium,
+            description : dto.description
         }).then((response) => response).catch((error) => { return { "message_error": "exist title task" } })
     }
 
-    async update_task(id: string, dto: UpdateTaskDto): Promise<Task | any>{
-        return this.TaskModel.update(
+    async update_task(id: number, dto: UpdateTaskDto): Promise<Tasks | any>{
+        return this.tasksModel.update(
             {
-                Title: dto.Title,
-                Date: dto.Date,
-                Status  : Status.pending,
-                Priority : dto.Priority,
-                Description : dto.Description 
+                Title: dto.title,
+                Date: dto.date,
+                Status  : dto.status,
+                Priority : dto.priority,
+                Description : dto.description 
             }, { where : {id : id}  }
         )
     }
+
+
     
 
 }
